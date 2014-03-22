@@ -35,63 +35,63 @@
 HANDLE
 BitmapToDIB (HBITMAP hbitmap, UINT bits)
 {
-	HANDLE              hdib ;
-	HDC                 hdc ;
-	BITMAP              bitmap ;
-	UINT                wLineLen ;
-	DWORD               dwSize ;
-	DWORD               wColSize ;
-	LPBITMAPINFOHEADER  lpbi ;
-	LPBYTE              lpBits ;
-	
-	GetObject(hbitmap,sizeof(BITMAP),&bitmap) ;
+    HANDLE              hdib ;
+    HDC                 hdc ;
+    BITMAP              bitmap ;
+    UINT                wLineLen ;
+    DWORD               dwSize ;
+    DWORD               wColSize ;
+    LPBITMAPINFOHEADER  lpbi ;
+    LPBYTE              lpBits ;
+    
+    GetObject(hbitmap,sizeof(BITMAP),&bitmap) ;
 
-	//
-	// DWORD align the width of the DIB
-	// Figure out the size of the colour table
-	// Calculate the size of the DIB
-	//
-	wLineLen = (bitmap.bmWidth*bits+31)/32 * 4;
-	wColSize = sizeof(RGBQUAD)*((bits <= 8) ? 1<<bits : 0);
-	dwSize = sizeof(BITMAPINFOHEADER) + wColSize +
-		(DWORD)(UINT)wLineLen*(DWORD)(UINT)bitmap.bmHeight;
+    //
+    // DWORD align the width of the DIB
+    // Figure out the size of the colour table
+    // Calculate the size of the DIB
+    //
+    wLineLen = (bitmap.bmWidth*bits+31)/32 * 4;
+    wColSize = sizeof(RGBQUAD)*((bits <= 8) ? 1<<bits : 0);
+    dwSize = sizeof(BITMAPINFOHEADER) + wColSize +
+        (DWORD)(UINT)wLineLen*(DWORD)(UINT)bitmap.bmHeight;
 
-	//
-	// Allocate room for a DIB and set the LPBI fields
-	//
-	hdib = GlobalAlloc(GHND,dwSize);
-	if (!hdib)
-		return hdib ;
+    //
+    // Allocate room for a DIB and set the LPBI fields
+    //
+    hdib = GlobalAlloc(GHND,dwSize);
+    if (!hdib)
+        return hdib ;
 
-	lpbi = (LPBITMAPINFOHEADER)GlobalLock(hdib) ;
+    lpbi = (LPBITMAPINFOHEADER)GlobalLock(hdib) ;
 
-	lpbi->biSize = sizeof(BITMAPINFOHEADER) ;
-	lpbi->biWidth = bitmap.bmWidth ;
-	lpbi->biHeight = bitmap.bmHeight ;
-	lpbi->biPlanes = 1 ;
-	lpbi->biBitCount = (WORD) bits ;
-	lpbi->biCompression = BI_RGB ;
-	lpbi->biSizeImage = dwSize - sizeof(BITMAPINFOHEADER) - wColSize ;
-	lpbi->biXPelsPerMeter = 0 ;
-	lpbi->biYPelsPerMeter = 0 ;
-	lpbi->biClrUsed = (bits <= 8) ? 1<<bits : 0;
-	lpbi->biClrImportant = 0 ;
+    lpbi->biSize = sizeof(BITMAPINFOHEADER) ;
+    lpbi->biWidth = bitmap.bmWidth ;
+    lpbi->biHeight = bitmap.bmHeight ;
+    lpbi->biPlanes = 1 ;
+    lpbi->biBitCount = (WORD) bits ;
+    lpbi->biCompression = BI_RGB ;
+    lpbi->biSizeImage = dwSize - sizeof(BITMAPINFOHEADER) - wColSize ;
+    lpbi->biXPelsPerMeter = 0 ;
+    lpbi->biYPelsPerMeter = 0 ;
+    lpbi->biClrUsed = (bits <= 8) ? 1<<bits : 0;
+    lpbi->biClrImportant = 0 ;
 
-	//
-	// Get the bits from the bitmap and stuff them after the LPBI
-	//
-	lpBits = (LPBYTE)(lpbi+1)+wColSize ;
+    //
+    // Get the bits from the bitmap and stuff them after the LPBI
+    //
+    lpBits = (LPBYTE)(lpbi+1)+wColSize ;
 
-	hdc = CreateCompatibleDC(NULL) ;
+    hdc = CreateCompatibleDC(NULL) ;
 
-	GetDIBits(hdc,hbitmap,0,bitmap.bmHeight,lpBits,(LPBITMAPINFO)lpbi, DIB_RGB_COLORS);
+    GetDIBits(hdc,hbitmap,0,bitmap.bmHeight,lpBits,(LPBITMAPINFO)lpbi, DIB_RGB_COLORS);
 
-	lpbi->biClrUsed = (bits <= 8) ? 1<<bits : 0;
+    lpbi->biClrUsed = (bits <= 8) ? 1<<bits : 0;
 
-	DeleteDC(hdc) ;
-	GlobalUnlock(hdib);
+    DeleteDC(hdc) ;
+    GlobalUnlock(hdib);
 
-	return hdib ;
+    return hdib ;
 }
 
 
@@ -133,9 +133,9 @@ grabdc_read_header(AVFormatContext *s1, AVFormatParameters *ap)
     HDC hdc;
     HDC hd;
 
-	AVStream *st = NULL;
+    AVStream *st = NULL;
     
-	int bpp;
+    int bpp;
     int x_offset = 0;
     int y_offset = 0;
     
@@ -149,15 +149,15 @@ grabdc_read_header(AVFormatContext *s1, AVFormatParameters *ap)
     offset = strchr(param, '+');
 
     if (offset) {
-	    sscanf(offset, "%d,%d", &x_offset, &y_offset);
-	    *offset = 0;
+        sscanf(offset, "%d,%d", &x_offset, &y_offset);
+        *offset = 0;
     }
 
-	/* Checking parameters             */
-	if (!ap || ap->width <= 0 || ap->height <= 0 || ap->time_base.den <= 0) {
-		av_log(s1, AV_LOG_ERROR, "Video size and/or rate is not defined. Use -s/-r\n");
-		return AVERROR(EIO);
-	}
+    /* Checking parameters             */
+    if (!ap || ap->width <= 0 || ap->height <= 0 || ap->time_base.den <= 0) {
+        av_log(s1, AV_LOG_ERROR, "Video size and/or rate is not defined. Use -s/-r\n");
+        return AVERROR(EIO);
+    }
     
     /* Get screen metrics              */
     cx = GetSystemMetrics(SM_CXSCREEN);
@@ -165,44 +165,44 @@ grabdc_read_header(AVFormatContext *s1, AVFormatParameters *ap)
 
     /* Check input position/size       */
     if (x_offset < 0 || (x_offset + ap->width) > cx) {
-	    av_log(s1, AV_LOG_ERROR, "Bad X coordinate or width.\n");
-	    return AVERROR(EIO);
+        av_log(s1, AV_LOG_ERROR, "Bad X coordinate or width.\n");
+        return AVERROR(EIO);
     }
 
     if (y_offset < 0 || (y_offset + ap->height) > cy) {
-	    av_log(s1, AV_LOG_ERROR, "Bad Y coordinate or height.\n");
-	    return AVERROR(EIO);
+        av_log(s1, AV_LOG_ERROR, "Bad Y coordinate or height.\n");
+        return AVERROR(EIO);
     }
 
-	/* Bytes per pixel and pixelformat  */
-	bpp = 32;
+    /* Bytes per pixel and pixelformat  */
+    bpp = 32;
 
-	/* Create stream and set parameters */
-	st = av_new_stream(s1, 0);
-	if (!st) {
-		return AVERROR(ENOMEM);
-	}
+    /* Create stream and set parameters */
+    st = av_new_stream(s1, 0);
+    if (!st) {
+        return AVERROR(ENOMEM);
+    }
 
-	av_set_pts_info(st, 64, 1, 1000000);
-	
-	grabdc->hdc        = hdc;
-	grabdc->hd         = hd;
+    av_set_pts_info(st, 64, 1, 1000000);
+    
+    grabdc->hdc        = hdc;
+    grabdc->hd         = hd;
     grabdc->frame_size = ap->width * ap->height * bpp/8;
-	grabdc->frame_num  = 0;
-	grabdc->frame_bpp  = bpp;
-	grabdc->time_base  = ap->time_base;
-	grabdc->time_frame = av_gettime() / av_q2d(ap->time_base);
-	grabdc->width      = ap->width;
-	grabdc->height     = ap->height;
-	grabdc->x_offset   = x_offset;
-	grabdc->y_offset   = y_offset;
+    grabdc->frame_num  = 0;
+    grabdc->frame_bpp  = bpp;
+    grabdc->time_base  = ap->time_base;
+    grabdc->time_frame = av_gettime() / av_q2d(ap->time_base);
+    grabdc->width      = ap->width;
+    grabdc->height     = ap->height;
+    grabdc->x_offset   = x_offset;
+    grabdc->y_offset   = y_offset;
 
-	st->codec->codec_type = CODEC_TYPE_VIDEO;
-	st->codec->codec_id   = CODEC_ID_RAWVIDEO;
-	st->codec->width      = ap->width;
-	st->codec->height     = ap->height;
-	st->codec->pix_fmt    = PIX_FMT_RGB32;
-	st->codec->time_base  = ap->time_base;
+    st->codec->codec_type = CODEC_TYPE_VIDEO;
+    st->codec->codec_id   = CODEC_ID_RAWVIDEO;
+    st->codec->width      = ap->width;
+    st->codec->height     = ap->height;
+    st->codec->pix_fmt    = PIX_FMT_RGB32;
+    st->codec->time_base  = ap->time_base;
 
     return 0;
 }
@@ -233,7 +233,7 @@ grabdc_read_packet(AVFormatContext *s1, AVPacket *pkt)
             }
             break;
         }
-	   Sleep(0);
+       Sleep(0);
     }
 
     if (av_new_packet(pkt, s->frame_size) < 0) {
@@ -242,33 +242,33 @@ grabdc_read_packet(AVFormatContext *s1, AVPacket *pkt)
 
     pkt->pts = curtime;
 
-	int width  = s->width;
-	int height = s->height;
-	int left   = s->x_offset;
-	int top    = s->y_offset;
+    int width  = s->width;
+    int height = s->height;
+    int left   = s->x_offset;
+    int top    = s->y_offset;
 
-	HDC hScreenDC = GetDC(NULL);
-	HDC hMemDC    = CreateCompatibleDC(hScreenDC);
+    HDC hScreenDC = GetDC(NULL);
+    HDC hMemDC    = CreateCompatibleDC(hScreenDC);
 
-	HBITMAP hbm;
-	HBITMAP oldbm;
+    HBITMAP hbm;
+    HBITMAP oldbm;
 
-	hbm   = CreateCompatibleBitmap(hScreenDC, width, height);
-	oldbm = (HBITMAP) SelectObject(hMemDC, hbm);
+    hbm   = CreateCompatibleBitmap(hScreenDC, width, height);
+    oldbm = (HBITMAP) SelectObject(hMemDC, hbm);
 
-	StretchBlt(hMemDC, 0, 0, width, height, hScreenDC, left, top+height, width, -height, SRCCOPY);
-	SelectObject(hMemDC,oldbm); 
+    StretchBlt(hMemDC, 0, 0, width, height, hScreenDC, left, top+height, width, -height, SRCCOPY);
+    SelectObject(hMemDC,oldbm); 
 
-	LPBITMAPINFOHEADER alpbi = (LPBITMAPINFOHEADER)GlobalLock(BitmapToDIB(hbm, s->frame_bpp));
+    LPBITMAPINFOHEADER alpbi = (LPBITMAPINFOHEADER)GlobalLock(BitmapToDIB(hbm, s->frame_bpp));
 
-	memcpy(pkt->data, (LPBYTE) alpbi + alpbi->biSize + alpbi->biClrUsed * sizeof(RGBQUAD), alpbi->biSizeImage);
+    memcpy(pkt->data, (LPBYTE) alpbi + alpbi->biSize + alpbi->biClrUsed * sizeof(RGBQUAD), alpbi->biSizeImage);
 
-	GlobalFree(alpbi);
+    GlobalFree(alpbi);
 
-	DeleteObject(hbm);
-	DeleteDC(hMemDC);
-	
-	ReleaseDC(NULL, hScreenDC);
+    DeleteObject(hbm);
+    DeleteDC(hMemDC);
+    
+    ReleaseDC(NULL, hScreenDC);
 
     return s->frame_size;
 }
